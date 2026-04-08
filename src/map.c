@@ -16,16 +16,14 @@ M *mapNew() {
     return map;
 }
 
-void mapAdd(char *key, void *val, M *map) { // добавление нового элемента
+void mapAdd(char *key, uint64_t val, M *map) { // добавление нового элемента
     MI *findElement;
 
     findElement = mapGet(key, map);
 
     // ключ уже существует, увеличиваем значение на val
     if (findElement) {
-        int tmp = findElement->val;
-        tmp += (int) val;
-        findElement->val = tmp;
+        findElement->val += val;
     } else {
         char *newkey;
 
@@ -40,7 +38,7 @@ void mapAdd(char *key, void *val, M *map) { // добавление нового
 
         (map->items + map->size)->key = newkey;
         (map->items + map->size)->val = val;
-        (map->items + map->size++)->type = 1;
+        map->size++;
     }
 }
 
@@ -67,7 +65,7 @@ void mapPrint(M *map) {
     //Сортировка
     for (int idx = 0; idx < map->size; idx++) {
         for (int minIdx = idx + 1; minIdx < map->size; minIdx++) {
-            if ((map->items + idx)->val < (map->items + minIdx)->val == 1)
+            if ((map->items + idx)->val < (map->items + minIdx)->val)
                 swap(map->items + idx, map->items + minIdx, sizeof(MI));
         }
     }
@@ -78,7 +76,7 @@ void mapPrint(M *map) {
             printf("%-20s", istr);
             istr = strtok(NULL, "|");
         }
-        printf("%-10d\n", (int)(map->items + i)->val);//?
+        printf("%-10llu\n", (unsigned long long)(map->items + i)->val);
     }
 }
 

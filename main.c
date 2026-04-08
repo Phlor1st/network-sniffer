@@ -32,6 +32,7 @@ char pcapFilter[256] = {0};
 int indicatorIntervalSec = 1;
 int indicatorDurationSec = 0;
 char indicatorOutputCsv[260] = "activity.csv";
+volatile sig_atomic_t stopRequested = 0;
 // количество пакетов по умолчанию бесконечно, поэтому установите максимальное значение
 
 void sigintHandler(int sig);
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
     if (!parseResult)
         return 0;
 
-    signal(SIGINT, sigintHandler); // сначала выполнит sigintHandler потом завершится
+    signal(SIGINT, sigintHandler);
 
     if (interface == NULL) {
         printf("%sInterface is required%s\n",RED, RESET);
@@ -67,19 +68,6 @@ int main(int argc, char *argv[]) {
     rawSocket = createRawSocket(interface);
 
     analysisPacket(rawSocket, INT32_MAX);
-
-    close(rawSocket);
-
-    printf("%sFinished%s\n",GREEN, RESET);
-    printf("%sSocket closed%s\n",GREEN, RESET);
-
-    return 0;
-}
-
-// обработка сигнала прерывания
-void sigintHandler(int sig) {
-    printf("%s\nReceived SIGINT%s\n",RED, RESET);
-
     close(rawSocket);
     mapPrint(resultStat);
     mapClose(resultStat);
@@ -87,5 +75,13 @@ void sigintHandler(int sig) {
            RESET);
     printf("%sSocket closed%s\n",GREEN, RESET);
     printf("%sFinished%s\n",GREEN, RESET);
-    exit(0);
+
+    return 0;
+}
+
+// обработка сигнала прерывания
+void sigintHandler(int sig) {
+    (void)sig;
+    stopRequested = 1;
+    indicatorHandleSigint();
 }

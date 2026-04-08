@@ -2,6 +2,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <signal.h>
 #include "map.h"
 
 extern struct map *resultStat;
@@ -25,6 +26,7 @@ extern char pcapFilter[256];
 extern int indicatorIntervalSec;
 extern int indicatorDurationSec;
 extern char indicatorOutputCsv[260];
+extern volatile sig_atomic_t stopRequested;
 
 #define RESET   "\033[0m"
 #define RED     "\033[1;31m"

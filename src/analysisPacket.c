@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <stdlib.h>
+#include <errno.h>
 
 
 #include "../includes/map.h"
@@ -18,11 +19,14 @@ void analysisPacket(int rawSocket, int n) {
            RESET);
 
     resultStat = mapNew();
-    while (n > 0) {
+    while (n > 0 && !stopRequested) {
         dataSize = recv(rawSocket, buffer, 65536, 0); // функция служит для чтения данных из сокета в буффер
 
         if (dataSize < 0) {
-            printf("%sFailed to receive data%s",RED, RESET);
+            if (stopRequested && errno == EINTR) {
+                break;
+            }
+            printf("%sFailed to receive data%s\n",RED, RESET);
             close(rawSocket);
             exit(1);
         }
