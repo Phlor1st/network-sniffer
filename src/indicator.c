@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
 
 #include "../includes/globals.h"
 
@@ -15,12 +16,9 @@ typedef struct {
     unsigned long long *bytesPerBucket;
 } IndicatorState;
 
-static volatile sig_atomic_t stopRequested = 0;
 static pcap_t *captureHandle = NULL;
 
-static void onSigint(int sig) {
-    (void)sig;
-    stopRequested = 1;
+void indicatorHandleSigint(void) {
     if (captureHandle != NULL) {
         pcap_breakloop(captureHandle);
     }
@@ -81,8 +79,6 @@ static void packetHandler(unsigned char *user, const struct pcap_pkthdr *header,
 }
 
 int runIndicatorMode(void) {
-    signal(SIGINT, onSigint);
-
     if (indicatorIntervalSec <= 0) {
         printf("%sIndicator interval must be > 0%s\n", RED, RESET);
         return 1;
@@ -116,6 +112,7 @@ int runIndicatorMode(void) {
     IndicatorState state;
     memset(&state, 0, sizeof(state));
     state.intervalSec = indicatorIntervalSec;
+    stopRequested = 0;
 
     printf("%sMode:%s INDICATOR\n", BLUE, RESET);
     printf("%sInterface:%s %s\n", BLUE, RESET, interface);
@@ -138,7 +135,7 @@ int runIndicatorMode(void) {
         }
     } else {
         int rc = pcap_loop(captureHandle, -1, packetHandler, (unsigned char *)&state);
-        if (rc == -1) {
+        if (rc == -1 && !stopRequested) {
             printf("%spcap_loop error:%s %s\n", RED, RESET, pcap_geterr(captureHandle));
         }
     }
