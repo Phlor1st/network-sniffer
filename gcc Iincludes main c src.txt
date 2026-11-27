@@ -1,1 +1,0 @@
-gcc -Iincludes main.c src/map.c src/selection_sort.c src/packetProcrssing.c src/interface.c src/rawSocket.c src/parseArguments.c src/analysisPacket.c src/indicator.c -o my -lpcap

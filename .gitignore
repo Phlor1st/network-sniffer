@@ -1,0 +1,7 @@
+my_program
+*.exe
+*.o
+__pycache__/
+.idea/
+*.csv
+*.png
